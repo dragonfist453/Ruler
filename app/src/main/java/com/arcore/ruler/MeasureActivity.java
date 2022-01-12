@@ -64,7 +64,7 @@ public class MeasureActivity extends Activity {
         DisplayManager displayManager = (DisplayManager) getSystemService(DISPLAY_SERVICE);
         if (displayManager != null) {
             displayManager.registerDisplayListener(new DisplayManager.DisplayListener() {
-                    @Override
+                @Override
                 public void onDisplayAdded(int displayId) {
                 }
 

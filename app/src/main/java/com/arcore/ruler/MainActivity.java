@@ -50,8 +50,9 @@ public class MainActivity extends AppCompatActivity {
         btn_locate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), LocateActivity.class);
-                startActivity(intent);
+//                Intent intent = new Intent(getApplicationContext(), LocateActivity.class);
+//                startActivity(intent);
+                Toast.makeText(getApplicationContext(),"Work in progress! Check back later", Toast.LENGTH_SHORT).show();
             }
         });
         btn_gallery.setOnClickListener(new View.OnClickListener() {
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 File[] imageFiles;
                 imageFiles = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/Ruler").listFiles();
                 if(imageFiles.length<1){
-                    Toast.makeText(getApplicationContext(),"저장된 사진이 없습니다.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"There are no pictures saved!", Toast.LENGTH_SHORT).show();
                 }
                 else{
                     Intent intent = new Intent(getApplicationContext(), GalleryActivity.class);
@@ -86,13 +87,13 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.a:
-                Toast.makeText(getApplicationContext(), "노원종/김성태", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Wonjong Now / Seongtae Kim", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.b:
                 Toast.makeText(getApplicationContext(), "Ruler v1.0", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.c:
-                Toast.makeText(getApplicationContext(), "메뉴얼로 이동합니다.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Go to manual.", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getApplicationContext(), ManualActivity.class);
                 startActivity(intent);
                 return true;

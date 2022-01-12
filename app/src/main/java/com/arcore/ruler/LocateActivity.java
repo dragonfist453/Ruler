@@ -57,7 +57,7 @@ public class LocateActivity extends Activity {
     private Session mSession;
     private Config mConfig;
 
-    // 선택한 좌표를 표현하는 변수
+    //Variables representing the selected coordinates
     private float mCurrentX;
     private float mCurrentY;
 
@@ -68,8 +68,7 @@ public class LocateActivity extends Activity {
     private final int CHAIR = 1;
     private final int BED = 2;
 
-
-    //물체가 회전 하는지의 여부를 결정 + 어떤 물체가 선택되었는지를 결정하는 변수
+    //Determines whether the object rotates + Variable that determines which object is selected
     private int mSelectedModel = -1;
 
     private float[] mModelMatrix = new float[16];
@@ -79,14 +78,14 @@ public class LocateActivity extends Activity {
     private float[] mBedModelMatrix = new float[16];
 
     private boolean[] mModelInit = { false, false, false };
-    private boolean[] mModelPut = { false, false, false }; //모델이 놓여져 있는지 여부
+    private boolean[] mModelPut = { false, false, false }; //Whether the model is put
 
 
-    //더블탭시 발동하는 스위치 변수. false일 경우에는 위치 지정x, true일 경우에는 위치 지정
+    //A switch variable that fires when double-tap. Positioning x if false, positioning if true
     private boolean mIsPut = false;
 
-    private GestureDetector mGestureDetector; //가구회전 변수
-    private ScaleGestureDetector mScaleDetector; // 가구 크기조절 변수
+    private GestureDetector mGestureDetector; // furniture rotation variable
+    private ScaleGestureDetector mScaleDetector; // furniture sizing variable
 
         private Button btn_capture_locate;
 
@@ -136,7 +135,7 @@ public class LocateActivity extends Activity {
                         }
                         @Override
                         public boolean onDoubleTap(MotionEvent event) {
-                            //mIsPut은 false로 들어옴
+                            //mIsPut comes in as false
                             mCurrentX = event.getX();
                             mCurrentY = event.getY();
                             mIsPut = true;
@@ -147,7 +146,7 @@ public class LocateActivity extends Activity {
                         public boolean onScroll(MotionEvent e1, MotionEvent e2,
                                                 float distanceX, float distanceY) {
 
-                            //물체의 방향이 실시간으로 조절되는 기능
+                            //The ability to adjust the direction of an object in real time
                             if (mSelectedModel != -1) {
                                 mRotateFactor -= (distanceX / 10);
                                 mRotateFactor%=360;
@@ -155,7 +154,7 @@ public class LocateActivity extends Activity {
                                     mRotateFactor += 360;
                                 }
                                 Matrix.rotateM(mModelMatrix, 0, -distanceX / 10, 0.0f, 1.0f, 0.0f);
-                                String rotateFactor = String.format(Locale.getDefault(), "방향 : %d도", (int)mRotateFactor);
+                                String rotateFactor = String.format(Locale.getDefault(), "Direction: %d Degree", (int)mRotateFactor);
                                 locate_rotate.setText(rotateFactor);
                             }
                             return true;
@@ -164,10 +163,10 @@ public class LocateActivity extends Activity {
             mScaleDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
                         @Override
                         public boolean onScale(ScaleGestureDetector detector) {
-                            //크기가 실시간으로 조절되는 기능
+                            //Ability to resize in real time
                             if (mSelectedModel != -1) {
                                 mScaleFactor *= detector.getScaleFactor();
-                                String scaleFactor = String.format(Locale.getDefault(), "크기 : %.2f배율", mScaleFactor*100 );
+                                String scaleFactor = String.format(Locale.getDefault(), "Size: %.2f Magnification", mScaleFactor*100 );
                                 locate_scale.setText(scaleFactor);
 
                                 Matrix.scaleM(mModelMatrix, 0,
@@ -219,9 +218,9 @@ public class LocateActivity extends Activity {
                         if (!mModelInit[TABLE]) {
                             float position[] = calculateInitialPosition(mRenderer.getWidth(), mRenderer.getHeight(), projMatrix, viewMatrix);
 
-                            Matrix.setIdentityM(mModelMatrix, 0); //단위행렬 생성. 매트릭스를 만들어냄 -> 오브젝트가 생성되도록 하는 기능
-                            Matrix.translateM(mModelMatrix, 0, position[0], position[1], position[2]); // 평행이동 행렬 : 포지션값만큼 평행이동
-                            Matrix.scaleM(mModelMatrix, 0, 0.02f, 0.02f, 0.02f); // 자기 위치에 생기는 사물의 초기 크기를 인위적으로 잡아줌
+                            Matrix.setIdentityM(mModelMatrix, 0); //Create identity matrix. Create a matrix -> Ability to create an object
+                            Matrix.translateM(mModelMatrix, 0, position[0], position[1], position[2]); // Translation matrix: translation by the position value
+                            Matrix.scaleM(mModelMatrix, 0, 0.02f, 0.02f, 0.02f); // Artificially grabs the initial size of an object at its location
 
                             mModelInit[TABLE] = true;
                             mModelPut[TABLE] = false;
@@ -290,19 +289,19 @@ public class LocateActivity extends Activity {
                 }
 
 
-                //<<더블탭 이벤트 발생 시>> mIsPut이 true가 되며 아래 이벤트가 발생
+                //<<When a double tap event occurs>> mIsPut becomes true and the following event occurs
                 if (mIsPut) {
                     List<HitResult> results = frame.hitTest(mCurrentX, mCurrentY);
-                    //HitTest를 하여 result를 가져옴. 만약 평면이 존재하면 그 위치에 물체를 놓음
+                    //HitTest to get the result. If a plane exists, place the object in that position.
                     for (HitResult result : results) {
                         Trackable trackable = result.getTrackable();
-                        Pose pose = result.getHitPose(); // hit된 result를 pose객체에 대입
+                        Pose pose = result.getHitPose(); // Assign the hit result to the pose object
                         float[] modelMatrix = new float[16];
                         pose.toMatrix(modelMatrix, 0);
 
-                        //지정한 방향과 크기를 적용하는 함수를 사용.
-                        Matrix.scaleM(modelMatrix, 0, mScaleFactor, mScaleFactor, mScaleFactor); // 확대/축소 행렬 : 지정된 배수만큼 확대/축소
-                        Matrix.rotateM(modelMatrix, 0, mRotateFactor, 0.0f, 1.0f, 0.0f); // 비율만큼 회전 ( 매트릭스, 배열시작점 보통0, 회전각, 회전벡터)
+                        //Use a function to apply a specified direction and size.
+                        Matrix.scaleM(modelMatrix, 0, mScaleFactor, mScaleFactor, mScaleFactor); // Zoom Matrix: Zoom in/out by a specified multiple
+                        Matrix.rotateM(modelMatrix, 0, mRotateFactor, 0.0f, 1.0f, 0.0f); // Rotate by percentage (matrix, array starting point usually 0, rotation angle, rotation vector)
 
                         mScaleFactor = 0.02f;
                         if (trackable instanceof Plane && ((Plane) trackable).isPoseInPolygon(result.getHitPose())) {
@@ -311,7 +310,7 @@ public class LocateActivity extends Activity {
                                     if (!mModelPut[TABLE]) {
                                         mModelPut[TABLE] = true;
 
-                                        //회전과 크기 변환을 막는 기능. 단, 주석처리 할 경우 원하는 위치에 놓였다가 바로 사라짐.
+                                        //Ability to prevent rotation and scaling. However, if commented out, it is placed at the desired location and then immediately disappears.
                                         mSelectedModel = -1;
 
                                         System.arraycopy(modelMatrix, 0, mTableModelMatrix, 0, 16);
@@ -440,7 +439,7 @@ public class LocateActivity extends Activity {
                 }
 
 
-                //원하는 사물을 해당 위치에 배치
+                //place the desired object in its place
                 if (mModelPut[TABLE]) {
                     mRenderer.setTableModelMatrix(mTableModelMatrix);
                     mRenderer.updateTableViewMatrix(viewMatrix);
@@ -467,19 +466,16 @@ public class LocateActivity extends Activity {
         mSurfaceView.setRenderer(mRenderer);
 
 
-        //save picutre
+        //save picture
         btn_capture_locate = (Button)findViewById(R.id.btn_capture_locate);
         btn_capture_locate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 isSaveClick = true;
                 mRenderer.printOptionEnable = isSaveClick;
-                Toast.makeText(getApplicationContext(), "저장 완료!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Saved!", Toast.LENGTH_SHORT).show();
             }
         });
-
-
-
     }
 
     @Override
@@ -552,7 +548,7 @@ public class LocateActivity extends Activity {
     }
 
 
-    //물체가 생성될 위치를 잡아주는 함수
+    //A function that determines where the object is to be created.
     public float[] calculateInitialPosition(int width, int height, float[] projMat, float[] viewMat) {
         return getScreenPoint(width / 2, height - 300, width, height, projMat, viewMat);
     }
